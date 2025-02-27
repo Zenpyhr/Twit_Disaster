@@ -5,7 +5,6 @@ as well as feature extraction.
 
 import nltk
 import pandas as pd
-import dill as pickle
 from nltk import ngrams
 from nltk.tokenize import word_tokenize
 from CountFeatureGenerator import *

@@ -19,7 +19,7 @@ class SvdFeatureGenerator(FeatureGenerator):
         self.n_components = n_components
         self.svd = TruncatedSVD(n_components=n_components, n_iter=15)
 
-    def process(self, train, test):
+    def process(self, train):
         """
         Applies SVD on TF-IDF features from TfidfFeatureGenerator.
         Stores SVD-transformed features directly in train and test DataFrames.
@@ -31,27 +31,22 @@ class SvdFeatureGenerator(FeatureGenerator):
         featuresTrain = tfidfGenerator.read('train')
         xBodyTfidfTrain = featuresTrain[0]
 
-        featuresTest = tfidfGenerator.read('test')
-        xBodyTfidfTest = featuresTest[0]
-
+        
         # Stack TF-IDF matrices (no extra split!)
-        xBodyTfidf = vstack([xBodyTfidfTrain, xBodyTfidfTest])
+        xBodyTfidf = vstack([xBodyTfidfTrain])
 
         # Fit and transform SVD
         self.svd.fit(xBodyTfidf)
 
         self.log("Transforming TF-IDF features with SVD...")
         xBodySvdTrain = self.svd.transform(xBodyTfidfTrain)
-        xBodySvdTest = self.svd.transform(xBodyTfidfTest)
 
         # Convert SVD features to DataFrames
         svd_columns = [f"svd_{i}" for i in range(self.n_components)]
         train_svd_df = pd.DataFrame(xBodySvdTrain, columns=svd_columns, index=train.index)
-        test_svd_df = pd.DataFrame(xBodySvdTest, columns=svd_columns, index=test.index)
 
         # Merge SVD features into train and test DataFrames
         train = pd.concat([train, train_svd_df], axis=1)
-        test = pd.concat([test, test_svd_df], axis=1)
 
         self.log("SVD feature extraction complete.")
-        return train, test
+        return train

@@ -19,7 +19,7 @@ class Word2VecFeatureGenerator(FeatureGenerator):
         self.min_count = min_count  # Minimum word occurrence to be included
         self.word2vec_model = None
 
-    def process(self, train, test):
+    def process(self, train):
         """
         Trains a Word2Vec model on the text corpus and generates word embeddings.
         Computes average Word2Vec features for each text instance.
@@ -29,10 +29,9 @@ class Word2VecFeatureGenerator(FeatureGenerator):
 
         # Tokenize text
         train["tokenized_text"] = train["text"].apply(word_tokenize)
-        test["tokenized_text"] = test["text"].apply(word_tokenize)
 
         # Combine all text for Word2Vec training
-        all_sentences = list(train["tokenized_text"]) + list(test["tokenized_text"])
+        all_sentences = list(train["tokenized_text"])
 
         self.log("Training Word2Vec model...")
         self.word2vec_model = Word2Vec(sentences=all_sentences, vector_size=self.vector_size,
@@ -40,19 +39,16 @@ class Word2VecFeatureGenerator(FeatureGenerator):
 
         # Compute average Word2Vec embeddings for each text instance
         train_vectors = train["tokenized_text"].apply(self.get_average_word2vec)
-        test_vectors = test["tokenized_text"].apply(self.get_average_word2vec)
 
         # Convert to DataFrames
         w2v_columns = [f"w2v_{i}" for i in range(self.vector_size)]
         train_w2v_df = pd.DataFrame(train_vectors.tolist(), columns=w2v_columns, index=train.index)
-        test_w2v_df = pd.DataFrame(test_vectors.tolist(), columns=w2v_columns, index=test.index)
 
         # Merge Word2Vec features into train and test DataFrames
         train = pd.concat([train, train_w2v_df], axis=1)
-        test = pd.concat([test, test_w2v_df], axis=1)
 
         self.log("Word2Vec feature extraction complete.")
-        return train, test
+        return train
 
     def get_average_word2vec(self, words):
         """

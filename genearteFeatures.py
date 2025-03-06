@@ -4,6 +4,7 @@ as well as feature extraction.
 '''
 
 import nltk
+import os
 import pandas as pd
 from nltk import ngrams
 from nltk.tokenize import word_tokenize
@@ -39,7 +40,7 @@ def generate_grams(data, print_grams=False):
     return data
 
 # Main function to generate features
-def process():
+def process_all():
     """
     Loads data, generates n-grams, and applies feature extraction methods.
     """
@@ -50,11 +51,11 @@ def process():
 
     # Step 2: Generate n-gram features
     train = generate_grams(train)
-    test = generate_grams(test)
+    #test = generate_grams(test)
 
     # Step 3: Save n-gram enhanced data (for debugging)
     train.to_csv("Data/ngram_train.csv", index=False)
-    test.to_csv("Data/ngram_test.csv", index=False)
+    #test.to_csv("Data/ngram_test.csv", index=False)
 
     # Step 4: Initialize feature generators
     countFG = CountFeatureGenerator()
@@ -67,7 +68,12 @@ def process():
 
     # Step 5: Apply feature generators
     for g in generators:
-        train, test = g.process(train, test)
+        g.process(train)
+
+    for g in generators:
+        g.read('train')
+    for g in generators:
+        g.read('test')
 
     # Step 6: Save final feature-enhanced datasets
     train.to_csv("Data/features_train.csv", index=False)
@@ -76,4 +82,5 @@ def process():
     print("Feature generation completed!")
 
 if __name__ == "__main__":
-    process()
+    os.chdir('c:/Users/boyan/OneDrive/Desktop/GIT/NLP_Disaster_Tweets/Twit_Disaster/')  #change environment 
+    process_all()

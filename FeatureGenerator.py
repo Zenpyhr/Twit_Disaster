@@ -18,7 +18,7 @@ class FeatureGenerator(abc.ABC):
         self.name = name
 
     @abc.abstractmethod
-    def process(self, train, test):
+    def process(self, train):
         """
         Abstract method: Must be implemented by subclasses.
         This function takes train and test datasets, applies feature extraction,

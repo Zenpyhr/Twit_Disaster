@@ -14,7 +14,7 @@ class TfidfFeatureGenerator(FeatureGenerator):
         super().__init__("TfidfFeatureGenerator")
         self.tfidf_vectorizer = TfidfVectorizer(ngram_range=(1, 3), max_features=5000)
 
-    def process(self, train, test):
+    def process(self, train):
         """
         Extracts TF-IDF features from the text column in train and test datasets.
         Returns the updated train and test DataFrames.
@@ -22,25 +22,25 @@ class TfidfFeatureGenerator(FeatureGenerator):
         self.log("Extracting TF-IDF features...")
 
         # Ensure text column exists
-        if "text" not in train.columns or "text" not in test.columns:
+        if "text" not in train.columns:
             self.log("Error: 'text' column missing in DataFrame!")
-            return train, test
+            return train
 
         # Fit TF-IDF on train data and transform both train and test
         train_tfidf = self.tfidf_vectorizer.fit_transform(train["text"])
-        test_tfidf = self.tfidf_vectorizer.transform(test["text"])
+        
 
         # Convert sparse matrices to DataFrames
         train_tfidf_df = pd.DataFrame(train_tfidf.toarray(), columns=self.tfidf_vectorizer.get_feature_names_out())
-        test_tfidf_df = pd.DataFrame(test_tfidf.toarray(), columns=self.tfidf_vectorizer.get_feature_names_out())
+       
 
         # Reset indices to match original data
         train_tfidf_df.index = train.index
-        test_tfidf_df.index = test.index
+     
 
         # Merge TF-IDF features with train and test sets
         train = pd.concat([train, train_tfidf_df], axis=1)
-        test = pd.concat([test, test_tfidf_df], axis=1)
+       
 
         self.log("TF-IDF feature extraction complete.")
-        return train, test
+        return train
